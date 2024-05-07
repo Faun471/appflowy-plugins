@@ -420,8 +420,8 @@ class _CodeBlockComponentWidgetState extends State<CodeBlockComponentWidget>
     return child;
   }
 
-  Widget _buildCodeBlock(BuildContext context, TextDirection textDirection) {
-    final isLightMode = Theme.of(context).brightness == Brightness.light;
+  Widget _buildCodeBlock(BuildContext context, TextDirection textDirection,
+      {Map<String, dynamic> theme = lightThemeInCodeblock}) {
     final delta = node.delta ?? Delta();
     final content = delta.toPlainText();
 
@@ -438,7 +438,7 @@ class _CodeBlockComponentWidgetState extends State<CodeBlockComponentWidget>
       throw Exception('Code block parse error.');
     }
 
-    final codeTextSpans = _convert(codeNodes, isLightMode: isLightMode);
+    final codeTextSpans = _convert(codeNodes, theme: theme);
     final linesOfCode = delta.toPlainText().split('\n').length;
 
     return Padding(
@@ -552,25 +552,24 @@ class _CodeBlockComponentWidgetState extends State<CodeBlockComponentWidget>
   // https://github.com/git-touch/highlight.dart/blob/master/flutter_highlight/lib/flutter_highlight.dart
   List<TextSpan> _convert(
     List<highlight.Node> nodes, {
-    bool isLightMode = true,
+    Map<String, dynamic> theme = lightThemeInCodeblock,
   }) {
     final List<TextSpan> spans = [];
     List<TextSpan> currentSpans = spans;
     final List<List<TextSpan>> stack = [];
 
-    final cbTheme = isLightMode ? lightThemeInCodeblock : darkThemeInCodeBlock;
 
     void traverse(highlight.Node node) {
       if (node.value != null) {
         currentSpans.add(
           node.className == null
               ? TextSpan(text: node.value)
-              : TextSpan(text: node.value, style: cbTheme[node.className!]),
+              : TextSpan(text: node.value, style: theme[node.className!]),
         );
       } else if (node.children != null) {
         final List<TextSpan> tmp = [];
         currentSpans.add(
-          TextSpan(children: tmp, style: cbTheme[node.className!]),
+          TextSpan(children: tmp, style: theme[node.className!]),
         );
         stack.add(currentSpans);
         currentSpans = tmp;
